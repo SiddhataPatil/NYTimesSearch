@@ -15,10 +15,13 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.Toast;
 
+import com.codepath.siddhatapatil.nytimessearch.Listener.EndlessScrollListener;
 import com.codepath.siddhatapatil.nytimessearch.Model.Article;
 import com.codepath.siddhatapatil.nytimessearch.Adapter.ArticleArrayAdapter;
 import com.codepath.siddhatapatil.nytimessearch.Model.Filter;
+import com.codepath.siddhatapatil.nytimessearch.Model.Status;
 import com.codepath.siddhatapatil.nytimessearch.R;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -51,6 +54,19 @@ public class SearchActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
         setupViews();
+        GridView lvItems = (GridView) findViewById(R.id.gvResults);
+        // Attach the listener to the AdapterView onCreate
+        lvItems.setOnScrollListener(new EndlessScrollListener() {
+            @Override
+            public boolean onLoadMore(int page, int totalItemsCount) {
+                // Triggered only when new data needs to be appended to the list
+                // Add whatever code is needed to append new items to your AdapterView
+                customLoadMoreDataFromApi(page);
+                // or customLoadMoreDataFromApi(totalItemsCount);
+                return true; // ONLY if more data is actually being loaded; false otherwise.
+            }
+        });
+
     }
     private void customLoadMoreDataFromApi(int page) {
         //onArticleSearch (filterQuery, page);
@@ -78,35 +94,39 @@ public class SearchActivity extends AppCompatActivity{
 
 
     public void onArticleSearch(View view) {
-        String query = etQuery.getText().toString();
-        //Toast.makeText(this, "Searching for " + query, Toast.LENGTH_LONG).show();
-        AsyncHttpClient client = new AsyncHttpClient();
-        String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
-        RequestParams params = new RequestParams();
-        params.put("api-key","eccffa7896a34b52beb277f76a763cea");
-        params.put("page", 0);
-        params.put("q",query);
-        client.get(url,params, new JsonHttpResponseHandler(){
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                super.onSuccess(statusCode, headers, response);
-                Log.d("DEBUG",response.toString());
-                JSONArray articleJSonResults = null;
-                try {
-                    articleJSonResults = response.getJSONObject("response").getJSONArray("docs");
-                    //Log.d("DEBUG", articleJSonResults.toString());
-                    articles.addAll(Article.fromJSONArray(articleJSonResults));
-                    adapter.notifyDataSetChanged();
-                    Log.d("DEBUG", articles.toString());
-                }catch (JSONException e){
-                    e.printStackTrace();
+        if (Status.getInstance(this).isOnline()) {
+            String query = etQuery.getText().toString();
+            //Toast.makeText(this, "Searching for " + query, Toast.LENGTH_LONG).show();
+            AsyncHttpClient client = new AsyncHttpClient();
+            String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
+            RequestParams params = new RequestParams();
+            params.put("api-key", "eccffa7896a34b52beb277f76a763cea");
+            params.put("page", 0);
+            params.put("q", query);
+            client.get(url, params, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    super.onSuccess(statusCode, headers, response);
+                    Log.d("DEBUG", response.toString());
+                    JSONArray articleJSonResults = null;
+                    try {
+                        articleJSonResults = response.getJSONObject("response").getJSONArray("docs");
+                        //Log.d("DEBUG", articleJSonResults.toString());
+                        articles.addAll(Article.fromJSONArray(articleJSonResults));
+                        adapter.notifyDataSetChanged();
+                        Log.d("DEBUG", articles.toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
+            });
 
 
+        }
+        else {
+            Toast.makeText(this,"No Internet",Toast.LENGTH_SHORT).show();
+        }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -178,5 +198,6 @@ public class SearchActivity extends AppCompatActivity{
         }
     }
 
-}
 
+
+}
