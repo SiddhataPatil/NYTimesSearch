@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="1">
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <RelativeLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="70dp"
+            android:orientation="horizontal"
+            android:id="@+id/rlDate">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/begin_date"
+                android:layout_gravity="left"
+                android:layout_alignParentTop="true"
+                android:id="@+id/tvBeginText"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/etBeginDate"
+                android:layout_gravity="right"
+                android:layout_alignParentTop="true"
+                android:layout_toRightOf="@id/tvBeginText"
+                android:text="" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="70dp"
+            android:orientation="horizontal"
+            android:layout_below="@+id/rlDate"
+            android:id="@+id/rlSort">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/sort"
+                android:layout_gravity="left"
+                android:id="@+id/tvSortOrder"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true" />
+
+            <Spinner
+                android:id="@+id/dropDown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/tvSortOrder"
+                android:entries="@array/sort"
+                android:prompt="@string/sort" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            android:layout_below="@+id/rlSort"
+            android:id="@+id/rlDeskVal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/news_desk"
+                android:layout_gravity="left"
+                android:id="@+id/tvNewsDeskValues"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true" />
+
+            <CheckBox android:id="@+id/checkbox_arts"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Arts"
+                android:onClick="onCheckboxClicked"
+                android:layout_toRightOf="@+id/tvNewsDeskValues"
+                android:layout_toEndOf="@+id/tvNewsDeskValues" />
+
+            <CheckBox android:id="@+id/checkbox_fashion_style"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Fashion"
+                android:layout_below="@+id/checkbox_arts"
+                android:layout_toRightOf="@+id/tvNewsDeskValues"
+                android:onClick="onCheckboxClicked"/>
+
+            <CheckBox android:id="@+id/checkbox_sports"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Sports"
+                android:layout_below="@+id/checkbox_fashion_style"
+                android:layout_toRightOf="@+id/tvNewsDeskValues"
+                android:onClick="onCheckboxClicked" />
+
+            <Button
+                android:id="@+id/btnSave"
+                style="?android:textAppearanceSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/action_save"
+                android:textStyle="bold"
+                android:layout_below="@+id/checkbox_sports"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:onClick="onSubmit" />
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+
+
+</LinearLayout>
