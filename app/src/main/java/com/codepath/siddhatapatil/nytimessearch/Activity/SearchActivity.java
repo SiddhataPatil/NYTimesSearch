@@ -5,16 +5,20 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.ShareActionProvider;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.codepath.siddhatapatil.nytimessearch.Listener.EndlessScrollListener;
@@ -40,7 +44,7 @@ public class SearchActivity extends AppCompatActivity{
 
     EditText etQuery;
     GridView gvResults;
-    Button btnSearch;
+    ImageButton btnSearch;
     ArrayList<Article> articles;
     ArticleArrayAdapter adapter;
     private Filter filter;
@@ -73,9 +77,9 @@ public class SearchActivity extends AppCompatActivity{
     }
     private void setupViews() {
 
-        etQuery = (EditText)findViewById(R.id.etQuery);
+        //etQuery = (EditText)findViewById(R.id.etQuery);
         gvResults = (GridView)findViewById(R.id.gvResults);
-        btnSearch = (Button)findViewById(R.id.btnSearch);
+        btnSearch = (ImageButton)findViewById(R.id.btnSearch);
         articles = new ArrayList<>();
         adapter = new ArticleArrayAdapter(this,articles);
         gvResults.setAdapter(adapter);
@@ -92,7 +96,7 @@ public class SearchActivity extends AppCompatActivity{
         });
     }
 
-
+/*
     public void onArticleSearch(View view) {
         if (Status.getInstance(this).isOnline()) {
             String query = etQuery.getText().toString();
@@ -127,22 +131,48 @@ public class SearchActivity extends AppCompatActivity{
             Toast.makeText(this,"No Internet",Toast.LENGTH_SHORT).show();
         }
     }
-
-    @Override
+*/
+   @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_main, menu);
-
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         MenuItem searchItem = menu.findItem(R.id.action_search);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setQueryHint("Search news here...");
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                // allows for search results following first search to have endless scrolling
 
-                adapter.clear();
+                AsyncHttpClient client = new AsyncHttpClient();
+                String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
+                RequestParams params = new RequestParams();
 
+                params.put("api-key", "eccffa7896a34b52beb277f76a763cea");
+                params.put("page", 0);
+                params.put("q", query);
+
+                Log.d("searchactivity", url);
+                // make network request
+                client.get(url, params, new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                        Log.d("DEBUG", response.toString());
+                        JSONArray articleJsonResults = null;
+
+                        try {
+                            articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
+                            Log.d("DEBUG", articleJsonResults.toString());
+                            articles.clear();
+                            articles.addAll(Article.fromJSONArray(articleJsonResults));
+                            adapter.notifyDataSetChanged();
+                            Log.d("DEBUG", articles.toString());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
                 searchView.clearFocus();
-                filterQuery = query;
                 return true;
             }
 
@@ -151,21 +181,19 @@ public class SearchActivity extends AppCompatActivity{
                 return false;
             }
         });
+
         return super.onCreateOptionsMenu(menu);
-
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
         switch(item.getItemId()) {
             case R.id.miFilter:
                 Intent intent = new Intent(this, SettingsActivity.class);
                 intent.putExtra("filter", filter);
                 this.startActivityForResult(intent, REQUEST_CODE);
                 break;
-
+            case R.id.action_settings:
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

@@ -15,6 +15,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
+
 /**
  * Created by siddhatapatil on 9/23/17.
  */
@@ -39,7 +41,8 @@ public class ArticleArrayAdapter extends ArrayAdapter<Article>{
         tvTitle.setText(article.getHeadline());
         String thumbnail = article.getThumbnail();
         if (!TextUtils.isEmpty(thumbnail)){
-            Picasso.with(getContext()).load(thumbnail).into(imageview);
+            Picasso.with(getContext()).load(thumbnail).transform(new RoundedCornersTransformation(25, 25))
+                    .into(imageview);
         }
         return  convertView;
     }
