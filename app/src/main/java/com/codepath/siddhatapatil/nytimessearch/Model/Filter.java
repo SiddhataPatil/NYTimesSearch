@@ -72,4 +72,3 @@ public class Filter implements Parcelable {
         dest.writeStringList(fl);
     }
 }
-

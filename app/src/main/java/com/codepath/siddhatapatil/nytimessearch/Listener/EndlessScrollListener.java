@@ -1,5 +1,10 @@
 package com.codepath.siddhatapatil.nytimessearch.Listener;
 
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
+
 /**
  * Created by siddhatapatil on 9/24/17.
  */

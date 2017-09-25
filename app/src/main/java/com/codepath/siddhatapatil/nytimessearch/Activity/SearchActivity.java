@@ -1,6 +1,7 @@
 package com.codepath.siddhatapatil.nytimessearch.Activity;
 
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -52,7 +53,10 @@ public class SearchActivity extends AppCompatActivity{
     private String beginDate;
     private String sort;
     private final int REQUEST_CODE = 20;
+    private final int DELAY = 1000;
+    String userSubmittedQuery = null;
     private String filterQuery;
+    private EndlessScrollListener scrollListener;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,18 +67,65 @@ public class SearchActivity extends AppCompatActivity{
         lvItems.setOnScrollListener(new EndlessScrollListener() {
             @Override
             public boolean onLoadMore(int page, int totalItemsCount) {
-                // Triggered only when new data needs to be appended to the list
-                // Add whatever code is needed to append new items to your AdapterView
-                customLoadMoreDataFromApi(page);
-                // or customLoadMoreDataFromApi(totalItemsCount);
-                return true; // ONLY if more data is actually being loaded; false otherwise.
+                loadNextDataFromApi(page);
+                return true;
             }
         });
+    }
+    private void loadNextDataFromApi(int page) {
+            fetchArticles(userSubmittedQuery, page);
+        }
 
+    public void fetchArticles(final String query, final int page) {
+
+        Handler handler = new Handler();
+        final Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                AsyncHttpClient client = new AsyncHttpClient();
+                String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
+                // String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json?q=health&begin_date=20160112&sort=oldest&fq=news_desk:(%22Education%22%20%22Health%22)&api-key=227c750bb7714fc39ef1559ef1bd8329";
+
+                RequestParams params = new RequestParams();
+                params.put("api-key", "eccffa7896a34b52beb277f76a763cea");
+                params.put("page", page);
+                params.put("q", query);
+
+                client.get(url, params, new JsonHttpResponseHandler() {
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                        Log.d("DEBUG", response.toString());
+                        JSONArray articleJsonResults = null;
+                        try {
+                            articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
+                            Log.d("DEBUG", articleJsonResults.toString());
+                            articles.clear();
+                            articles.addAll(Article.fromJSONArray(articleJsonResults));
+                            adapter.notifyDataSetChanged();
+                            Log.d("DEBUG", articles.toString());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                        super.onFailure(statusCode, headers, responseString, throwable);
+                        Log.d("DEBUG", responseString.toString());
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
+                        super.onFailure(statusCode, headers, throwable, errorResponse);
+                        Log.d("DEBUG", errorResponse.toString());
+                    }
+                });
+            }
+        };
+
+        handler.postDelayed(runnable, DELAY);
     }
-    private void customLoadMoreDataFromApi(int page) {
-        //onArticleSearch (filterQuery, page);
-    }
+
+
     private void setupViews() {
 
         //etQuery = (EditText)findViewById(R.id.etQuery);
@@ -96,43 +147,41 @@ public class SearchActivity extends AppCompatActivity{
         });
     }
 
-/*
-    public void onArticleSearch(View view) {
-        if (Status.getInstance(this).isOnline()) {
-            String query = etQuery.getText().toString();
-            //Toast.makeText(this, "Searching for " + query, Toast.LENGTH_LONG).show();
-            AsyncHttpClient client = new AsyncHttpClient();
-            String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
-            RequestParams params = new RequestParams();
-            params.put("api-key", "eccffa7896a34b52beb277f76a763cea");
-            params.put("page", 0);
-            params.put("q", query);
-            client.get(url, params, new JsonHttpResponseHandler() {
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                    super.onSuccess(statusCode, headers, response);
-                    Log.d("DEBUG", response.toString());
-                    JSONArray articleJSonResults = null;
-                    try {
-                        articleJSonResults = response.getJSONObject("response").getJSONArray("docs");
-                        //Log.d("DEBUG", articleJSonResults.toString());
-                        articles.addAll(Article.fromJSONArray(articleJSonResults));
-                        adapter.notifyDataSetChanged();
-                        Log.d("DEBUG", articles.toString());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+    /*
+        public void onArticleSearch(View view) {
+            if (Status.getInstance(this).isOnline()) {
+                String query = etQuery.getText().toString();
+                //Toast.makeText(this, "Searching for " + query, Toast.LENGTH_LONG).show();
+                AsyncHttpClient client = new AsyncHttpClient();
+                String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
+                RequestParams params = new RequestParams();
+                params.put("api-key", "eccffa7896a34b52beb277f76a763cea");
+                params.put("page", 0);
+                params.put("q", query);
+                client.get(url, params, new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                        super.onSuccess(statusCode, headers, response);
+                        Log.d("DEBUG", response.toString());
+                        JSONArray articleJSonResults = null;
+                        try {
+                            articleJSonResults = response.getJSONObject("response").getJSONArray("docs");
+                            //Log.d("DEBUG", articleJSonResults.toString());
+                            articles.addAll(Article.fromJSONArray(articleJSonResults));
+                            adapter.notifyDataSetChanged();
+                            Log.d("DEBUG", articles.toString());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
-                }
-            });
-
-
+                });
+            }
+            else {
+                Toast.makeText(this,"No Internet",Toast.LENGTH_SHORT).show();
+            }
         }
-        else {
-            Toast.makeText(this,"No Internet",Toast.LENGTH_SHORT).show();
-        }
-    }
-*/
-   @Override
+    */
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
