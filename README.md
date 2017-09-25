@@ -28,5 +28,5 @@ The following advanced user stories were completed:
 
 Here's a walkthrough of implemented user stories:
 
-<img src='https://github.com/SiddhataPatil/NYTimesSearch/blob/master/news_search.gif' width="750" height="750" />
+<img src='https://github.com/SiddhataPatil/NYTimesSearch/blob/master/news_search.gif' width="350" height="750" />
 
